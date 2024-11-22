@@ -1,0 +1,38 @@
+{
+    "8": {
+        "WIN_SG": 1,
+        "WIN_G1": 0,
+        "WIN_G2": 0,
+        "LOSS": 0,
+        "BRANCOS_SG": 0,
+        "BRANCOS_G1": 0,
+        "BRANCOS_G2": 0
+    },
+    "17": {
+        "WIN_SG": 1,
+        "WIN_G1": 0,
+        "WIN_G2": 0,
+        "LOSS": 0,
+        "BRANCOS_SG": 0,
+        "BRANCOS_G1": 0,
+        "BRANCOS_G2": 0
+    },
+    "23": {
+        "WIN_SG": 0,
+        "WIN_G1": 0,
+        "WIN_G2": 1,
+        "LOSS": 0,
+        "BRANCOS_SG": 0,
+        "BRANCOS_G1": 0,
+        "BRANCOS_G2": 0
+    },
+    "25": {
+        "WIN_SG": 1,
+        "WIN_G1": 0,
+        "WIN_G2": 0,
+        "LOSS": 0,
+        "BRANCOS_SG": 0,
+        "BRANCOS_G1": 0,
+        "BRANCOS_G2": 0
+    }
+}
