@@ -10,7 +10,7 @@ import os
 
 # Verificar se a pasta db existe, se não, cria
 if not os.path.exists("db"):
-    os.makedirs("db/usuarios.json")
+    os.makedirs("db")
 # Configuração do banco de dados
 DB_PATH = "db/usuarios.json"
 USER_DB_PATH_TEMPLATE = "db/{}.json"
