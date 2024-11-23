@@ -1,2 +1,2 @@
-# Bot_Sinais_Blaze
-Bot Sinais Blaze
+# Cadastro Clientes
+Cadastro de Cliente Com Contas e Clientes Exclusivos.
