@@ -2,3 +2,6 @@ crcmod
 qrcode
 telebot
 requests
+streamlit
+csv
+base64
