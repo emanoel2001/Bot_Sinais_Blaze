@@ -301,59 +301,45 @@ def remover_cliente(db_manager):
             del st.session_state.deleted_client  # Limpa a exclusão armazenada
 
 def atualizar_cliente(db_manager):
-    """Atualização avançada dos dados de um cliente com seleção personalizada"""
-    st.title("Atualizar Cliente")
+    """Atualiza os dados de um cliente específico"""
     
-    # Se a variável de cliente não existir na sessão, criamos ela
-    if 'clientes' not in st.session_state:
-        st.session_state.clientes = []
-        st.session_state.cliente_selecionado = None
+    # Solicita o CPF do cliente a ser atualizado
+    cpf_cliente = st.text_input("Informe o CPF do cliente a ser atualizado:")
     
-    if not st.session_state.clientes:
-        nome = st.text_input("Digite o nome do cliente para buscar").strip().upper()
-        if st.button("Buscar Cliente"):
-            clientes = db_manager.buscar_cliente(nome)
-            if clientes:
-                st.session_state.clientes = clientes
-            else:
-                st.error("Cliente não encontrado.")
-                return
-    
-    if st.session_state.clientes:
-        cliente_opcoes = [f"{c['Nome']} - CPF: {c['CPF']}" for c in st.session_state.clientes]
-        cliente_selecionado = st.selectbox(
-            "Selecione o cliente para atualizar",
-            cliente_opcoes,
-            index=cliente_opcoes.index(st.session_state.cliente_selecionado) if st.session_state.cliente_selecionado else 0
-        )
-        st.session_state.cliente_selecionado = cliente_selecionado
+    if cpf_cliente:
+        # Tenta buscar o cliente pelo CPF
+        cliente = db_manager.buscar_cliente_por_cpf(cpf_cliente)
         
-        cliente = st.session_state.clientes[cliente_opcoes.index(cliente_selecionado)]
-        
-        st.subheader(f"Atualizando informações de: {cliente['Nome']}")
-        
-        campo_atualizado = st.selectbox(
-            "Selecione o campo para atualizar",
-            ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"]
-        )
-        novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
-        
-        if st.button("Atualizar Cliente"):
-            if novo_valor.strip():
-                sucesso = db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
-                
-                if sucesso:
-                    st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
-                    
-                    # Recarrega os clientes para refletir as atualizações
-                    st.session_state.clientes = db_manager.buscar_cliente(cliente['Nome'])
-                    st.session_state.cliente_selecionado = None
-                    
-                    st.info("Atualização concluída. Você pode buscar outro cliente.")
+        if cliente:
+            # Exibe o formulário com os dados do cliente para edição
+            st.write(f"**Atualizar dados do cliente {cliente['Nome']} ({cliente['CPF']})**")
+            
+            nome = st.text_input("Nome", cliente['Nome'])
+            telefone = st.text_input("Telefone", cliente['Telefone'])
+            email = st.text_input("Email", cliente['Email'])
+            endereco = st.text_area("Endereço", cliente['Endereco'])
+
+            # Verifica se o formulário foi preenchido corretamente
+            if st.button("Atualizar Cliente"):
+                # Validação dos dados
+                if not nome or not telefone or not email or not endereco:
+                    st.error("Todos os campos devem ser preenchidos.")
                 else:
-                    st.error("Erro ao atualizar o cliente. Verifique o banco de dados ou os dados fornecidos.")
-            else:
-                st.error("O valor do campo não pode ser vazio.")
+                    # Atualiza os dados do cliente no banco de dados
+                    cliente_atualizado = {
+                        'Nome': nome,
+                        'Telefone': telefone,
+                        'Email': email,
+                        'Endereco': endereco
+                    }
+
+                    try:
+                        db_manager.atualizar_cliente(cpf_cliente, cliente_atualizado)
+                        st.success(f"Cliente {nome} atualizado com sucesso!")
+                    except Exception as e:
+                        st.error(f"Ocorreu um erro ao atualizar o cliente: {e}")
+        else:
+            st.warning(f"Cliente com CPF {cpf_cliente} não encontrado.")
 
 def listar_clientes(db_manager):
     """Exibe todos os clientes cadastrados de forma organizada e com filtros de busca"""
