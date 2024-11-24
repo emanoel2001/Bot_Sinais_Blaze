@@ -307,19 +307,24 @@ def remover_cliente(db_manager):
 def atualizar_cliente(db_manager):
     """Atualiza as informações de um cliente."""
     st.title("Atualizar Cliente")
-    
+
     # Solicita o nome do cliente para buscar os dados
     nome = st.text_input("Digite o nome do cliente para atualizar", key="nome_cliente").strip().upper()
 
-    # Verifica se o cliente existe no banco de dados
     if nome:
-        cliente_encontrado = db_manager.db.search(db_manager.query.Nome == nome)
-        
-        if cliente_encontrado:
-            cliente = cliente_encontrado[0]  # Pega o primeiro cliente encontrado
+        # Realiza a busca por nomes semelhantes
+        clientes_encontrados = db_manager.db.search(db_manager.query.Nome.matches(nome, case=False))
+
+        if clientes_encontrados:
+            # Exibe uma lista de clientes encontrados
+            nomes_clientes = [cliente['Nome'] for cliente in clientes_encontrados]
+            cliente_selecionado = st.selectbox("Selecione o cliente para atualizar", nomes_clientes)
+
+            # Exibe os dados do cliente selecionado
+            cliente = next(cliente for cliente in clientes_encontrados if cliente['Nome'] == cliente_selecionado)
             st.write("Dados atuais do cliente:", cliente)
 
-            # Atualiza os campos do cliente
+            # Formulário para editar os dados
             with st.form("Atualizar Cliente"):
                 novo_nome = st.text_input("Novo Nome", value=cliente['Nome'])
                 novo_endereco = st.text_input("Novo Endereço", value=cliente['Endereco'])
@@ -332,17 +337,17 @@ def atualizar_cliente(db_manager):
                     # Valida se os campos não estão vazios
                     if novo_nome and novo_endereco and novo_telefone and novo_cpf and novo_email:
                         # Atualiza o cliente com os novos dados
-                        db_manager.atualizar_cliente(nome, "Nome", novo_nome)
-                        db_manager.atualizar_cliente(nome, "Endereco", novo_endereco)
-                        db_manager.atualizar_cliente(nome, "Telefone", novo_telefone)
-                        db_manager.atualizar_cliente(nome, "CPF", novo_cpf)
-                        db_manager.atualizar_cliente(nome, "Email", novo_email)
+                        db_manager.atualizar_cliente(cliente['Nome'], "Nome", novo_nome)
+                        db_manager.atualizar_cliente(cliente['Nome'], "Endereco", novo_endereco)
+                        db_manager.atualizar_cliente(cliente['Nome'], "Telefone", novo_telefone)
+                        db_manager.atualizar_cliente(cliente['Nome'], "CPF", novo_cpf)
+                        db_manager.atualizar_cliente(cliente['Nome'], "Email", novo_email)
 
                         st.success("Cliente atualizado com sucesso!")
                     else:
                         st.warning("Todos os campos são obrigatórios.")
         else:
-            st.warning("Cliente não encontrado.")
+            st.warning("Nenhum cliente encontrado com esse nome.")
 
 def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
