@@ -305,17 +305,35 @@ def remover_cliente(db_manager):
 
 def atualizar_cliente(db_manager):
     """Atualizar dados de um cliente"""
-    nome = st.text_input("Nome do cliente para atualizar").strip().upper()
+    st.title("Atualizar Cliente")
+    nome = st.text_input("Digite o nome do cliente para atualizar", key="buscar_cliente_atualizar").strip().upper()
+
     if st.button("Buscar Cliente"):
         cliente = db_manager.buscar_cliente(nome)
         if cliente:
-            campo_atualizado = st.selectbox("Campo a ser atualizado", ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"])
-            novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
-            if st.button("Atualizar Cliente"):
-                db_manager.atualizar_cliente(nome, campo_atualizado, novo_valor)
-                st.success(f"{campo_atualizado} do cliente atualizado com sucesso!")
+            cliente = cliente[0]  # Assume o primeiro resultado encontrado
+            st.subheader(f"Cliente encontrado: {cliente['Nome']}")
+            
+            # Exibe informações atuais do cliente
+            st.write(f"**Data de Nascimento:** {cliente['DataNascimento']}")
+            st.write(f"**Endereço:** {cliente['Endereco']}")
+            st.write(f"**Telefone:** {cliente['Telefone']}")
+            st.write(f"**CPF:** {cliente['CPF']}")
+            st.write(f"**E-mail:** {cliente['Email']}")
+            
+            # Seleciona o campo a ser atualizado
+            campo_atualizado = st.selectbox("Selecione o campo para atualizar", 
+                                            ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"], key="campo_atualizar")
+            novo_valor = st.text_input(f"Novo valor para {campo_atualizado}").strip()
+            
+            if st.button("Confirmar Atualização"):
+                if novo_valor:
+                    db_manager.atualizar_cliente(nome, campo_atualizado, novo_valor)
+                    st.success(f"**{campo_atualizado}** do cliente **{nome}** atualizado com sucesso!", icon="✅")
+                else:
+                    st.warning("O novo valor não pode estar vazio.", icon="⚠️")
         else:
-            st.error("Cliente não encontrado.")
+            st.error("Cliente não encontrado. Verifique o nome e tente novamente.", icon="❌")
 
 def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
