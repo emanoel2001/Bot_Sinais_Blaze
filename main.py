@@ -6,11 +6,26 @@ import string
 import pandas as pd
 import datetime
 import bcrypt
+import json
 
-# Configuração do banco de dados
+# Caminho do banco de dados
 DB_PATH = "db/usuarios.json"
+
+# Função para garantir que o banco de dados JSON está válido
+def verificar_banco_de_dados(path):
+    try:
+        with open(path, 'r') as f:
+            json.load(f)  # Tenta carregar o JSON
+    except (json.JSONDecodeError, FileNotFoundError):
+        st.warning("Banco de dados corrompido ou não encontrado. Recriando...")
+        with open(path, 'w') as f:
+            json.dump([], f)  # Cria um novo banco de dados vazio
+
+# Verifica e recria o banco de dados, se necessário
+verificar_banco_de_dados(DB_PATH)
 USER_DB_PATH_TEMPLATE = "db/{}.json"
-db = TinyDB(DB_PATH)  # Banco de dados geral de usuários
+# Inicializa o TinyDB após a verificação
+db = TinyDB(DB_PATH)
 user_query = Query()
 
 # Funções auxiliares
