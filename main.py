@@ -320,9 +320,19 @@ def atualizar_cliente(db_manager):
             nomes_clientes = [cliente['Nome'] for cliente in clientes_encontrados]
             cliente_selecionado = st.selectbox("Selecione o cliente para atualizar", nomes_clientes)
 
-            # Exibe os dados do cliente selecionado
+            # Exibe os dados do cliente selecionado de forma mais organizada
             cliente = next(cliente for cliente in clientes_encontrados if cliente['Nome'] == cliente_selecionado)
-            st.write("Dados atuais do cliente:", cliente)
+            st.subheader("Dados atuais do cliente:")
+
+            # Criando colunas para organizar as informações
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"**Nome:** {cliente['Nome']}")
+                st.markdown(f"**Endereço:** {cliente['Endereco']}")
+                st.markdown(f"**Telefone:** {cliente['Telefone']}")
+            with col2:
+                st.markdown(f"**CPF:** {cliente['CPF']}")
+                st.markdown(f"**E-mail:** {cliente['Email']}")
 
             # Formulário para editar os dados
             with st.form("Atualizar Cliente"):
