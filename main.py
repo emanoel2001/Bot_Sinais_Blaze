@@ -106,7 +106,7 @@ def main():
     
     # Personalização da barra lateral
     st.sidebar.image("qrcode.png", use_column_width=True)
-    st.subheader('Nos ajude Doando QUALQUER VALOR! Obrigado!.')
+    st.sidebar.header('Nos ajude Doando QUALQUER VALOR! Obrigado!.')
     st.sidebar.header("Sistema de Gerenciamento")
     st.sidebar.subheader("Acesse o sistema de forma eficiente e segura.")
     
