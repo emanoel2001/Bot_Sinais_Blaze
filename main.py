@@ -361,12 +361,34 @@ def atualizar_cliente(db_manager):
                 st.error("O valor do campo não pode ser vazio.")
 
 def listar_clientes(db_manager):
-    """Exibe todos os clientes cadastrados"""
+    """Exibe todos os clientes cadastrados de forma organizada e com filtros de busca"""
+    # Recupera todos os clientes cadastrados
     clientes = db_manager.listar_clientes()
+
     if clientes:
+        # Converte os dados dos clientes para um DataFrame para exibição tabular
+        df_clientes = pd.DataFrame(clientes)
+        
+        # Exibe a tabela com os dados dos clientes
         st.write("**Clientes Cadastrados:**")
-        for cliente in clientes:
-            st.write(f"- {cliente['Nome']} ({cliente['CPF']})")
+        st.dataframe(df_clientes[['Nome', 'CPF', 'Telefone', 'Email', 'Endereco']])
+
+        # Filtros para busca por nome ou CPF
+        filtro_nome = st.text_input("Buscar por nome:", "")
+        filtro_cpf = st.text_input("Buscar por CPF:", "")
+        
+        # Aplica os filtros de busca se existirem
+        if filtro_nome:
+            df_clientes = df_clientes[df_clientes['Nome'].str.contains(filtro_nome, case=False)]
+        if filtro_cpf:
+            df_clientes = df_clientes[df_clientes['CPF'].str.contains(filtro_cpf, case=False)]
+        
+        # Exibe a tabela filtrada
+        if not df_clientes.empty:
+            st.dataframe(df_clientes[['Nome', 'CPF', 'Telefone', 'Email', 'Endereco']])
+        else:
+            st.warning("Nenhum cliente encontrado com os filtros aplicados.")
+    
     else:
         st.warning("Nenhum cliente cadastrado.")
 
