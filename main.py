@@ -14,7 +14,7 @@ if not os.path.exists("db"):
 
 # Caminho do banco de dados
 DB_PATH = "db/usuarios.json"
-
+clientes_db = db.table('clientes')
 def verificar_banco_de_dados(path):
     if not os.path.exists(path):
         with open(path, 'w') as f:
@@ -218,53 +218,48 @@ def cadastrar_cliente(db_manager):
             else:
                 st.warning("Todos os campos são obrigatórios.")
 
-def verificar_cliente(db_manager):
-    """Busca de clientes em tempo real e permite exclusão com opção de desfazer."""
-    st.title("Buscar Cliente")
+def atualizar_cliente(db):
+    """Atualiza os dados de um cliente específico no banco de dados TinyDB"""
     
-    # Captura a entrada e garante que a busca seja reativa
-    nome = st.text_input("Digite o nome do cliente para buscar", key="nome_cliente").strip().upper()
-
-    # Verifica se há clientes excluídos para permitir desfazer
-    if 'deleted_client' not in st.session_state:
-        st.session_state.deleted_client = None
-
-    if nome:
-        resultados = db_manager.buscar_cliente(nome)
+    # Solicita o CPF do cliente a ser atualizado
+    cpf_cliente = st.text_input("Informe o CPF do cliente a ser atualizado:")
+    
+    if cpf_cliente:
+        Cliente = Query()
         
-        if resultados:
-            st.write(f"**Resultados encontrados para '{nome}':**")
-            for cliente in resultados:
-                # Identificador único para cada cliente encontrado
-                cliente_id = cliente['CPF']
-                
-                # Se o cliente foi excluído e está no estado de "excluído"
-                if st.session_state.deleted_client and st.session_state.deleted_client['CPF'] == cliente_id:
-                    # Exibe o botão "Voltar" se o cliente foi excluído
-                    if st.button(f"🔄 Voltar ({cliente['Nome']})", key=f"voltar_{cliente_id}"):
-                        # Desfaz a exclusão, restaurando o estado
-                        st.session_state.deleted_client = None
-                        st.success(f"A exclusão do cliente {cliente['Nome']} foi desfeita.")
+        # Tenta buscar o cliente pelo CPF
+        cliente = clientes_db.search(Cliente.CPF == cpf_cliente)
+        
+        if cliente:
+            cliente = cliente[0]  # O resultado é uma lista, então pegamos o primeiro item
+            
+            # Exibe o formulário com os dados do cliente para edição
+            st.write(f"**Atualizar dados do cliente {cliente['Nome']} ({cliente['CPF']})**")
+            
+            nome = st.text_input("Nome", cliente['Nome'])
+            telefone = st.text_input("Telefone", cliente['Telefone'])
+            email = st.text_input("Email", cliente['Email'])
+            endereco = st.text_area("Endereço", cliente['Endereco'])
+
+            # Verifica se o formulário foi preenchido corretamente
+            if st.button("Atualizar Cliente"):
+                # Validação dos dados
+                if not nome or not telefone or not email or not endereco:
+                    st.error("Todos os campos devem ser preenchidos.")
                 else:
-                    # Exibe as informações do cliente
-                    with st.expander(f"📄 {cliente['Nome']}"):
-                        st.write(f"**Data de Nascimento**: {cliente['DataNascimento']}")
-                        st.write(f"**Endereço**: {cliente['Endereco']}")
-                        st.write(f"**Telefone**: {cliente['Telefone']}")
-                        st.write(f"**CPF**: {cliente['CPF']}")
-                        st.write(f"**E-mail**: {cliente['Email']}")
-                        
-                        # Exibe o botão "Deletar" se o cliente não foi excluído ainda
-                        if st.button(f"🗑️ Deletar", key=f"deletar_{cliente_id}"):
-                            # Realiza a exclusão no banco de dados
-                            db_manager.remover_cliente(cliente['Nome'])  
-                            # Armazena temporariamente o cliente excluído
-                            st.session_state.deleted_client = cliente  
-                            st.warning(f"Cliente {cliente['Nome']} excluído. Clique em 'Voltar' para desfazer.")
+                    # Atualiza os dados do cliente no banco de dados TinyDB
+                    cliente_atualizado = {
+                        'Nome': nome,
+                        'Telefone': telefone,
+                        'Email': email,
+                        'Endereco': endereco
+                    }
+                    
+                    # Atualiza o cliente no banco de dados com o CPF como chave
+                    clientes_db.update(cliente_atualizado, Cliente.CPF == cpf_cliente)
+                    st.success(f"Cliente {nome} atualizado com sucesso!")
         else:
-            st.info(f"Nenhum cliente encontrado com '{nome}'.")
-    else:
-        st.info("Digite um nome para buscar clientes.")
+            st.warning(f"Cliente com CPF {cpf_cliente} não encontrado.")
 
 def remover_cliente(db_manager):
     """Remove um cliente com confirmação e opção de restauração."""
