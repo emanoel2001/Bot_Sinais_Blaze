@@ -217,20 +217,52 @@ def cadastrar_cliente(db_manager):
                 st.warning("Todos os campos são obrigatórios.")
 
 def verificar_cliente(db_manager):
-    """Verificar se um cliente existe"""
-    nome = st.text_input("Nome do cliente para verificar").strip().upper()
-    if st.button("Buscar Cliente"):
-        resultado = db_manager.buscar_cliente(nome)
-        if resultado:
-            for cliente in resultado:
-                st.write(f"**Nome**: {cliente['Nome']}")
-                st.write(f"**Data de Nascimento**: {cliente['DataNascimento']}")
-                st.write(f"**Endereço**: {cliente['Endereco']}")
-                st.write(f"**Telefone**: {cliente['Telefone']}")
-                st.write(f"**CPF**: {cliente['CPF']}")
-                st.write(f"**E-mail**: {cliente['Email']}")
+    """Busca de clientes em tempo real e permite exclusão com opção de desfazer."""
+    st.title("Buscar Cliente")
+    
+    # Captura a entrada e garante que a busca seja reativa
+    nome = st.text_input("Digite o nome do cliente para buscar", key="nome_cliente").strip().upper()
+
+    # Verifica se há clientes excluídos para permitir desfazer
+    if 'deleted_client' not in st.session_state:
+        st.session_state.deleted_client = None
+
+    if nome:
+        resultados = db_manager.buscar_cliente(nome)
+        
+        if resultados:
+            st.write(f"**Resultados encontrados para '{nome}':**")
+            for cliente in resultados:
+                # Identificador único para cada cliente encontrado
+                cliente_id = cliente['CPF']
+                
+                # Se o cliente foi excluído e está no estado de "excluído"
+                if st.session_state.deleted_client and st.session_state.deleted_client['CPF'] == cliente_id:
+                    # Exibe o botão "Voltar" se o cliente foi excluído
+                    if st.button(f"🔄 Voltar ({cliente['Nome']})", key=f"voltar_{cliente_id}"):
+                        # Desfaz a exclusão, restaurando o estado
+                        st.session_state.deleted_client = None
+                        st.success(f"A exclusão do cliente {cliente['Nome']} foi desfeita.")
+                else:
+                    # Exibe as informações do cliente
+                    with st.expander(f"📄 {cliente['Nome']}"):
+                        st.write(f"**Data de Nascimento**: {cliente['DataNascimento']}")
+                        st.write(f"**Endereço**: {cliente['Endereco']}")
+                        st.write(f"**Telefone**: {cliente['Telefone']}")
+                        st.write(f"**CPF**: {cliente['CPF']}")
+                        st.write(f"**E-mail**: {cliente['Email']}")
+                        
+                        # Exibe o botão "Deletar" se o cliente não foi excluído ainda
+                        if st.button(f"🗑️ Deletar", key=f"deletar_{cliente_id}"):
+                            # Realiza a exclusão no banco de dados
+                            db_manager.remover_cliente(cliente['Nome'])  
+                            # Armazena temporariamente o cliente excluído
+                            st.session_state.deleted_client = cliente  
+                            st.warning(f"Cliente {cliente['Nome']} excluído. Clique em 'Voltar' para desfazer.")
         else:
-            st.error("Cliente não encontrado.")
+            st.info(f"Nenhum cliente encontrado com '{nome}'.")
+    else:
+        st.warning("Digite ao menos uma letra para buscar clientes.")
 
 def remover_cliente(db_manager):
     """Remover um cliente"""
