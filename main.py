@@ -95,10 +95,6 @@ class ClienteManager:
         """Atualiza informações de um cliente"""
         self.db.update({campo: novo_valor}, self.query.Nome == nome)
 
-def buscar_clientes_por_nome(self, nome_parcial):
-    query = "SELECT * FROM clientes WHERE Nome LIKE %s"
-    self.cursor.execute(query, (f"%{nome_parcial}%",))
-    return self.cursor.fetchall()  # Deve retornar uma lista de dicionários
 
 # Funções de gerenciamento de página no Streamlit
 def main():
