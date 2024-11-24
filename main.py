@@ -96,21 +96,37 @@ class ClienteManager:
         self.db.update({campo: novo_valor}, self.query.Nome == nome)
 
 
-# Funções de gerenciamento de página no Streamlit
 def main():
-    """Função principal do app Streamlit"""
-    st.set_page_config(page_title="Gerenciamento de Clientes", layout="wide", initial_sidebar_state="expanded")
+    """Função principal para gerenciar a navegação e autenticação do app Streamlit"""
     
-    # Definir estado de login na sessão
+    # Configuração da página
+    st.set_page_config(page_title="Sistema de Gerenciamento de Clientes", 
+                       layout="wide", 
+                       initial_sidebar_state="expanded")
+    
+    # Personalização da barra lateral
+    st.sidebar.image("flash.jpg", use_column_width=True)
+    st.sidebar.header("Sistema de Gerenciamento")
+    st.sidebar.subheader("Acesse o sistema de forma eficiente e segura.")
+    
+    # Verificação do estado de login na sessão
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
     if 'username' not in st.session_state:
         st.session_state.username = ""
-
+    
+    # Fluxo de navegação conforme o estado de login
     if st.session_state.logged_in:
+        # Se o usuário estiver logado, exibe o painel de controle
+        st.title(f"Bem-vindo, {st.session_state.username} 🎉")
+        st.success("Você está autenticado e pronto para gerenciar seus dados.")
         gerenciamento_clientes()
     else:
-        menu = st.sidebar.selectbox("Selecione uma opção", ["Login", "Cadastro", "Recuperação de Senha"])
+        # Se o usuário não estiver logado, exibe as opções de login, cadastro ou recuperação de senha
+        menu = st.sidebar.selectbox("Escolha uma opção de acesso", 
+                                    ["Login", "Cadastro", "Recuperação de Senha"], 
+                                    index=0, label_visibility="collapsed")
+
         if menu == "Login":
             login()
         elif menu == "Cadastro":
@@ -118,52 +134,58 @@ def main():
         elif menu == "Recuperação de Senha":
             recuperacao_senha()
 
+    # Rodapé informativo
+    st.sidebar.markdown("## Contato")
+    st.sidebar.markdown("📧 filiadordeouro@gmail.com")
+    st.sidebar.markdown("📞 (85) 99235-4262")
+    st.sidebar.markdown("Siga-nos nas redes sociais para mais novidades!")
+
 def login():
     """Página de login"""
-    st.title("Login")
-    username = st.text_input("Usuário")
-    password = st.text_input("Senha", type="password")
+    st.title("Login 🛡️")
+    username = st.text_input("Usuário 🔑")
+    password = st.text_input("Senha 🔒", type="password")
     if st.button("Entrar"):
         if verificar_usuario(username, password):
             st.session_state.logged_in = True
             st.session_state.username = username
-            st.success(f"Bem-vindo, {username}!")
+            st.success(f"Bem-vindo, {username} 👏!")
             gerenciamento_clientes()
         else:
-            st.error("Usuário ou senha incorretos.")
+            st.error("Usuário ou senha incorretos. 😞")
 
 def cadastro():
     """Página de cadastro de novo usuário"""
-    st.title("Cadastro")
-    username = st.text_input("Novo Usuário")
-    password = st.text_input("Nova Senha", type="password")
-    confirm_password = st.text_input("Confirmar Senha", type="password")
-    email = st.text_input("E-mail")
+    st.title("Cadastro ✍️")
+    username = st.text_input("Novo Usuário 👤")
+    password = st.text_input("Nova Senha 🔑", type="password")
+    confirm_password = st.text_input("Confirmar Senha 🔑", type="password")
+    email = st.text_input("E-mail 📧")
 
-    if st.button("Cadastrar"):
+    if st.button("Cadastrar 🎉"):
         if password == confirm_password:
             if criar_usuario(username, password, email):
-                st.success("Usuário cadastrado com sucesso!", icon="✅")
+                st.success("Usuário cadastrado com sucesso! ✅", icon="✅")
             else:
-                st.error("Usuário ou e-mail já existem.", icon="❌")
+                st.error("Usuário ou e-mail já existem. ⚠️", icon="❌")
         else:
-            st.warning("As senhas não coincidem.", icon="⚠️")
+            st.warning("As senhas não coincidem. ⚠️", icon="⚠️")
 
 def recuperacao_senha():
     """Página para recuperação de senha"""
-    st.title("Recuperação de Senha")
-    email = st.text_input("E-mail para recuperação")
-    nova_senha = st.text_input("Nova Senha", type="password")
-    confirm_nova_senha = st.text_input("Confirmar Nova Senha", type="password")
+    st.title("Recuperação de Senha 🔑")
+    email = st.text_input("E-mail para recuperação 📧")
+    nova_senha = st.text_input("Nova Senha 🔑", type="password")
+    confirm_nova_senha = st.text_input("Confirmar Nova Senha 🔑", type="password")
     
-    if st.button("Recuperar Senha"):
+    if st.button("Recuperar Senha 🔄"):
         if nova_senha == confirm_nova_senha:
             if recuperar_senha(email, nova_senha):
-                st.success("Senha redefinida com sucesso!")
+                st.success("Senha redefinida com sucesso! 🔑")
             else:
-                st.error("E-mail não encontrado.")
+                st.error("E-mail não encontrado. 😞")
         else:
-            st.error("As senhas não coincidem.")
+            st.error("As senhas não coincidem. ⚠️")
 
 def gerenciamento_clientes():
     """Página principal de gerenciamento de clientes"""
@@ -171,7 +193,7 @@ def gerenciamento_clientes():
     db_path = USER_DB_PATH_TEMPLATE.format(username)  # Caminho do banco de dados do usuário
     db_manager = ClienteManager(db_path)
 
-    menu = st.sidebar.radio("Menu", ["Cadastrar Cliente", "Verificar Cliente", "Remover Cliente", "Atualizar Cliente", "Listar Clientes", "Sair"])
+    menu = st.sidebar.radio("Menu 📋", ["Cadastrar Cliente", "Verificar Cliente", "Remover Cliente", "Atualizar Cliente", "Listar Clientes", "Sair"])
 
     if menu == "Cadastrar Cliente":
         cadastrar_cliente(db_manager)
@@ -186,7 +208,7 @@ def gerenciamento_clientes():
     elif menu == "Sair":
         st.session_state.logged_in = False
         st.session_state.username = ""
-        st.success("Você saiu com sucesso!")
+        st.success("Você saiu com sucesso! 👋")
         login()
 
 def cadastrar_cliente(db_manager):
