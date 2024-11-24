@@ -97,6 +97,7 @@ class ClienteManager:
 
 
 # Funções de gerenciamento de página no Streamlit
+# Funções principais do Streamlit
 def main():
     """Função principal do app Streamlit"""
     st.set_page_config(page_title="Gerenciamento de Clientes", layout="wide", initial_sidebar_state="expanded")
@@ -134,7 +135,7 @@ def login():
 
 def cadastro():
     """Página de cadastro de novo usuário"""
-    st.title("Cadastro")
+    st.title("Cadastro de Novo Usuário")
     username = st.text_input("Novo Usuário")
     password = st.text_input("Nova Senha", type="password")
     confirm_password = st.text_input("Confirmar Senha", type="password")
@@ -263,7 +264,7 @@ def verificar_cliente(db_manager):
         else:
             st.info(f"Nenhum cliente encontrado com '{nome}'.")
     else:
-        st.warning("Digite ao menos uma letra para buscar clientes.")
+        st.info("Digite um nome para buscar clientes.")
 
 def remover_cliente(db_manager):
     """Remove um cliente com confirmação e opção de restauração."""
@@ -360,16 +361,14 @@ def atualizar_cliente(db_manager):
                 st.error("O valor do campo não pode ser vazio.")
 
 def listar_clientes(db_manager):
-    """Listar todos os clientes cadastrados"""
+    """Exibe todos os clientes cadastrados"""
     clientes = db_manager.listar_clientes()
     if clientes:
-        df = pd.DataFrame(clientes)
-        st.dataframe(df.style.set_table_styles([{
-            'selector': 'thead th',
-            'props': [('background-color', '#4CAF50'), ('color', 'white')]
-        }]))
+        st.write("**Clientes Cadastrados:**")
+        for cliente in clientes:
+            st.write(f"- {cliente['Nome']} ({cliente['CPF']})")
     else:
-        st.write("Nenhum cliente cadastrado.")
+        st.warning("Nenhum cliente cadastrado.")
 
 if __name__ == "__main__":
     main()
