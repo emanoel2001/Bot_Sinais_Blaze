@@ -365,7 +365,6 @@ def atualizar_cliente(db_manager):
             if novo_valor.strip():  # Verifica se a entrada não está vazia
                 db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
                 st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
-                st.session_state.clear()  # Limpa a sessão após atualização
             else:
                 st.error("O valor do campo não pode ser vazio.")
 
