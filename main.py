@@ -365,6 +365,14 @@ def atualizar_cliente(db_manager):
             if novo_valor.strip():  # Verifica se a entrada não está vazia
                 db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
                 st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
+                
+                # Limpa apenas as variáveis relacionadas à busca de cliente
+                st.session_state.clientes = []
+                st.session_state.cliente_selecionado = None
+                
+                # Mensagem para iniciar nova busca
+                st.info("Atualização concluída. Você pode buscar outro cliente.")
+                
             else:
                 st.error("O valor do campo não pode ser vazio.")
 
