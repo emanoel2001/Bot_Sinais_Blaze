@@ -14,7 +14,6 @@ if not os.path.exists("db"):
 
 # Caminho do banco de dados
 DB_PATH = "db/usuarios.json"
-clientes_db = db.table('clientes')
 def verificar_banco_de_dados(path):
     if not os.path.exists(path):
         with open(path, 'w') as f:
@@ -25,6 +24,7 @@ verificar_banco_de_dados(DB_PATH)
 USER_DB_PATH_TEMPLATE = "db/{}.json"
 # Inicializa o TinyDB após a verificação
 db = TinyDB(DB_PATH)
+clientes_db = db.table('clientes')
 user_query = Query()
 
 # Funções auxiliares
