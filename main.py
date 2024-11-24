@@ -105,7 +105,8 @@ def main():
                        initial_sidebar_state="expanded")
     
     # Personalização da barra lateral
-    st.sidebar.image("flash.jpg", use_column_width=True)
+    st.sidebar.image("qrcode.png", use_column_width=True)
+    st.subheader('Nos ajude Doando QUALQUER VALOR! Obrigado!.')
     st.sidebar.header("Sistema de Gerenciamento")
     st.sidebar.subheader("Acesse o sistema de forma eficiente e segura.")
     
