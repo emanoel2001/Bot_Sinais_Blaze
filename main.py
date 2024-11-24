@@ -312,8 +312,8 @@ def atualizar_cliente(db_manager):
     nome = st.text_input("Digite o nome do cliente para atualizar", key="nome_cliente").strip().upper()
 
     if nome:
-        # Realiza a busca por nomes semelhantes
-        clientes_encontrados = db_manager.db.search(db_manager.query.Nome.matches(nome, case=False))
+        # Realiza a busca por nomes semelhantes sem usar o parâmetro 'case'
+        clientes_encontrados = db_manager.db.search(db_manager.query.Nome.matches(nome))
 
         if clientes_encontrados:
             # Exibe uma lista de clientes encontrados
