@@ -313,48 +313,29 @@ def atualizar_cliente(db_manager):
         st.session_state.clientes = []
         st.session_state.cliente_selecionado = None
     
-    # Entrada do nome do cliente, só aparece se nenhum cliente foi buscado ainda
     if not st.session_state.clientes:
         nome = st.text_input("Digite o nome do cliente para buscar").strip().upper()
-        
         if st.button("Buscar Cliente"):
             clientes = db_manager.buscar_cliente(nome)
-            
             if clientes:
-                st.session_state.clientes = clientes  # Salva a lista na sessão
+                st.session_state.clientes = clientes
             else:
                 st.error("Cliente não encontrado.")
-                return  # Para execução se não encontrar clientes
+                return
     
-    # Se clientes já foram buscados, exibe a lista de seleção
     if st.session_state.clientes:
         cliente_opcoes = [f"{c['Nome']} - CPF: {c['CPF']}" for c in st.session_state.clientes]
-        
-        # Seleção de cliente, com valor salvo na sessão
         cliente_selecionado = st.selectbox(
             "Selecione o cliente para atualizar",
             cliente_opcoes,
             index=cliente_opcoes.index(st.session_state.cliente_selecionado) if st.session_state.cliente_selecionado else 0
         )
-        
-        # Salva o cliente selecionado na sessão
         st.session_state.cliente_selecionado = cliente_selecionado
         
-        # Identifica o cliente selecionado
         cliente = st.session_state.clientes[cliente_opcoes.index(cliente_selecionado)]
         
         st.subheader(f"Atualizando informações de: {cliente['Nome']}")
         
-        # Exibir informações atuais
-        with st.expander("Informações Atuais do Cliente"):
-            st.write(f"**Nome:** {cliente['Nome']}")
-            st.write(f"**Data de Nascimento:** {cliente['DataNascimento']}")
-            st.write(f"**Endereço:** {cliente['Endereco']}")
-            st.write(f"**Telefone:** {cliente['Telefone']}")
-            st.write(f"**CPF:** {cliente['CPF']}")
-            st.write(f"**E-mail:** {cliente['Email']}")
-        
-        # Formulário de atualização
         campo_atualizado = st.selectbox(
             "Selecione o campo para atualizar",
             ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"]
@@ -362,17 +343,19 @@ def atualizar_cliente(db_manager):
         novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
         
         if st.button("Atualizar Cliente"):
-            if novo_valor.strip():  # Verifica se a entrada não está vazia
-                db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
-                st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
+            if novo_valor.strip():
+                sucesso = db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
                 
-                # Limpa apenas as variáveis relacionadas à busca de cliente
-                st.session_state.clientes = []
-                st.session_state.cliente_selecionado = None
-                
-                # Mensagem para iniciar nova busca
-                st.info("Atualização concluída. Você pode buscar outro cliente.")
-                
+                if sucesso:
+                    st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
+                    
+                    # Recarrega os clientes para refletir as atualizações
+                    st.session_state.clientes = db_manager.buscar_cliente(cliente['Nome'])
+                    st.session_state.cliente_selecionado = None
+                    
+                    st.info("Atualização concluída. Você pode buscar outro cliente.")
+                else:
+                    st.error("Erro ao atualizar o cliente. Verifique o banco de dados ou os dados fornecidos.")
             else:
                 st.error("O valor do campo não pode ser vazio.")
 
