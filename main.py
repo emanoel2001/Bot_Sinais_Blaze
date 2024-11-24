@@ -7,19 +7,19 @@ import pandas as pd
 import datetime
 import bcrypt
 import json
+import os
+# Criar pasta caso não tenha
+if not os.path.exists("db"):
+    os.makedirs("db")
 
 # Caminho do banco de dados
 DB_PATH = "db/usuarios.json"
 
-# Função para garantir que o banco de dados JSON está válido
 def verificar_banco_de_dados(path):
-    try:
-        with open(path, 'r') as f:
-            json.load(f)  # Tenta carregar o JSON
-    except (json.JSONDecodeError, FileNotFoundError):
-        st.warning("Banco de dados corrompido ou não encontrado. Recriando...")
+    if not os.path.exists(path):
+        st.warning("Banco de dados não encontrado. Criando...")
         with open(path, 'w') as f:
-            json.dump([], f)  # Cria um novo banco de dados vazio
+            json.dump([], f)
 
 # Verifica e recria o banco de dados, se necessário
 verificar_banco_de_dados(DB_PATH)
@@ -35,7 +35,8 @@ def gerar_senha_temporaria():
 
 def hash_senha(password):
     salt = bcrypt.gensalt()
-    return bcrypt.hashpw(password.encode(), salt)
+    hashed = bcrypt.hashpw(password.encode(), salt)
+    return hashed.decode()  # Converte para string
 
 # Funções de autenticação
 def criar_usuario(username, password, email):
@@ -50,8 +51,10 @@ def criar_usuario(username, password, email):
 
 def verificar_usuario(username, password):
     user = db.search(user_query.username == username)
-    if user and bcrypt.checkpw(password.encode(), user[0]['password']):
-        return True
+    if user:
+        stored_hash = user[0]['password'].encode()  # Converte para bytes
+        if bcrypt.checkpw(password.encode(), stored_hash):
+            return True
     return False
 
 def recuperar_senha(email, nova_senha):
