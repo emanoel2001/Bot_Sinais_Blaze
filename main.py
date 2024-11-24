@@ -17,9 +17,8 @@ DB_PATH = "db/usuarios.json"
 
 def verificar_banco_de_dados(path):
     if not os.path.exists(path):
-        st.warning("Banco de dados não encontrado. Criando...")
         with open(path, 'w') as f:
-            json.dump([], f)
+            json.dump([], f)  # Garante que um array vazio seja criado
 
 # Verifica e recria o banco de dados, se necessário
 verificar_banco_de_dados(DB_PATH)
