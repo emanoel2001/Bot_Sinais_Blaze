@@ -305,31 +305,35 @@ def remover_cliente(db_manager):
             del st.session_state.deleted_client  # Limpa a exclusão armazenada
 
 def atualizar_cliente(db_manager):
-    """Atualização dos dados de um cliente com seleção dinâmica"""
+    """Atualização avançada dos dados de um cliente com seleção personalizada"""
     st.title("Atualizar Cliente")
     
     # Entrada do nome do cliente
-    nome = st.text_input("Digite o nome do cliente para buscar", "").strip().upper()
+    nome = st.text_input("Digite o nome do cliente para buscar").strip().upper()
     
-    if nome:
-        clientes = db_manager.buscar_clientes_por_nome(nome)  # Buscar todos os clientes que correspondem ao nome
+    if st.button("Buscar Cliente"):
+        clientes = db_manager.buscar_cliente(nome)
+        
         if clientes:
-            # Exibir lista de clientes encontrados para seleção
-            nome_selecionado = st.selectbox("Selecione o cliente", [cliente['Nome'] for cliente in clientes])
+            # Lista de opções com nome e detalhes básicos
+            cliente_opcoes = [f"{c['Nome']} - CPF: {c['CPF']}" for c in clientes]
             
-            # Buscar os detalhes do cliente selecionado
-            cliente_selecionado = next(cliente for cliente in clientes if cliente['Nome'] == nome_selecionado)
+            # Selecionar cliente específico
+            cliente_selecionado = st.selectbox("Selecione o cliente para atualizar", cliente_opcoes)
             
-            st.subheader(f"Atualizando informações de: {cliente_selecionado['Nome']}")
+            # Identificar o cliente selecionado
+            cliente = clientes[cliente_opcoes.index(cliente_selecionado)]
+            
+            st.subheader(f"Atualizando informações de: {cliente['Nome']}")
             
             # Exibir informações atuais
             with st.expander("Informações Atuais do Cliente"):
-                st.write(f"**Nome:** {cliente_selecionado['Nome']}")
-                st.write(f"**Data de Nascimento:** {cliente_selecionado['DataNascimento']}")
-                st.write(f"**Endereço:** {cliente_selecionado['Endereco']}")
-                st.write(f"**Telefone:** {cliente_selecionado['Telefone']}")
-                st.write(f"**CPF:** {cliente_selecionado['CPF']}")
-                st.write(f"**E-mail:** {cliente_selecionado['Email']}")
+                st.write(f"**Nome:** {cliente['Nome']}")
+                st.write(f"**Data de Nascimento:** {cliente['DataNascimento']}")
+                st.write(f"**Endereço:** {cliente['Endereco']}")
+                st.write(f"**Telefone:** {cliente['Telefone']}")
+                st.write(f"**CPF:** {cliente['CPF']}")
+                st.write(f"**E-mail:** {cliente['Email']}")
             
             # Formulário de atualização
             campo_atualizado = st.selectbox(
@@ -340,12 +344,12 @@ def atualizar_cliente(db_manager):
             
             if st.button("Atualizar Cliente"):
                 if novo_valor.strip():  # Verifica se a entrada não está vazia
-                    db_manager.atualizar_cliente(cliente_selecionado['Nome'], campo_atualizado, novo_valor.strip().upper())
+                    db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
                     st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
                 else:
                     st.error("O valor do campo não pode ser vazio.")
         else:
-            st.error("Nenhum cliente encontrado com esse nome.")
+            st.error("Cliente não encontrado.")
 
 def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
