@@ -95,6 +95,11 @@ class ClienteManager:
         """Atualiza informações de um cliente"""
         self.db.update({campo: novo_valor}, self.query.Nome == nome)
 
+def buscar_clientes_por_nome(self, nome_parcial):
+    query = "SELECT * FROM clientes WHERE Nome LIKE %s"
+    self.cursor.execute(query, (f"%{nome_parcial}%",))
+    return self.cursor.fetchall()  # Deve retornar uma lista de dicionários
+
 # Funções de gerenciamento de página no Streamlit
 def main():
     """Função principal do app Streamlit"""
@@ -304,34 +309,53 @@ def remover_cliente(db_manager):
             del st.session_state.deleted_client  # Limpa a exclusão armazenada
 
 def atualizar_cliente(db_manager):
-    """Atualizar dados de um cliente com melhoria na experiência do usuário"""
+    """Atualização avançada dos dados de um cliente com design aprimorado"""
     st.title("Atualizar Cliente")
-    nome = st.text_input("Nome do cliente para atualizar").strip().upper()
     
-    if nome:
-        # Buscar o cliente na base de dados
-        cliente = db_manager.buscar_cliente(nome)
-        if cliente:
-            # Selecionar qual campo será atualizado
-            campo_atualizado = st.selectbox(
-                "Selecione o campo a ser atualizado",
-                ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"]
+    # Entrada do nome parcial do cliente
+    nome_parcial = st.text_input("Digite o nome do cliente").strip().upper()
+    
+    # Busca dinâmica enquanto digita
+    if nome_parcial:
+        clientes_encontrados = db_manager.buscar_clientes_por_nome(nome_parcial)
+        
+        if clientes_encontrados:
+            # Mostrar lista de clientes encontrados
+            cliente_selecionado = st.selectbox(
+                "Selecione o cliente para atualizar",
+                [f"{c['Nome']} - {c['CPF']}" for c in clientes_encontrados]
             )
-            # Input para novo valor
-            novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
             
-            # Validação de dados antes da atualização
-            if st.button("Atualizar Cliente"):
-                if novo_valor:
-                    # Atualiza o valor no banco de dados
-                    db_manager.atualizar_cliente(nome, campo_atualizado, novo_valor)
-                    st.success(f"{campo_atualizado} do cliente '{nome}' atualizado com sucesso!")
-                else:
-                    st.warning("Por favor, insira um novo valor válido.")
+            # Extrair dados do cliente selecionado
+            cliente = next((c for c in clientes_encontrados if f"{c['Nome']} - {c['CPF']}" == cliente_selecionado), None)
+            
+            if cliente:
+                st.subheader(f"Atualizando informações de: {cliente['Nome']}")
+                
+                # Exibir informações atuais
+                with st.expander("Informações Atuais do Cliente"):
+                    st.write(f"**Nome:** {cliente['Nome']}")
+                    st.write(f"**Data de Nascimento:** {cliente['DataNascimento']}")
+                    st.write(f"**Endereço:** {cliente['Endereco']}")
+                    st.write(f"**Telefone:** {cliente['Telefone']}")
+                    st.write(f"**CPF:** {cliente['CPF']}")
+                    st.write(f"**E-mail:** {cliente['Email']}")
+                
+                # Formulário de atualização
+                campo_atualizado = st.selectbox(
+                    "Selecione o campo para atualizar",
+                    ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"]
+                )
+                novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
+                
+                if st.button("Atualizar Cliente"):
+                    if novo_valor.strip():  # Verifica se a entrada não está vazia
+                        db_manager.atualizar_cliente(cliente['CPF'], campo_atualizado, novo_valor.strip().upper())
+                        st.success(f"**{campo_atualizado}** atualizado com sucesso para **{novo_valor}**!")
+                    else:
+                        st.error("O valor do campo não pode ser vazio.")
         else:
-            st.error(f"Cliente '{nome}' não encontrado.")
-    else:
-        st.warning("Digite o nome do cliente para buscar.")
+            st.warning("Nenhum cliente encontrado com esse nome.")
 
 def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
