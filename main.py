@@ -371,7 +371,6 @@ def listar_clientes(db_manager):
         
         # Exibe a tabela com os dados dos clientes
         st.write("**Clientes Cadastrados:**")
-        st.dataframe(df_clientes[['Nome', 'CPF', 'Telefone', 'Email', 'Endereco']])
 
         # Filtros para busca por nome ou CPF
         filtro_nome = st.text_input("Buscar por nome:", "")
