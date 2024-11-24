@@ -143,7 +143,7 @@ def main():
 
 def login():
     """Página de login"""
-    st.title("Login 🛡️")
+    st.title("Login 👤")
     username = st.text_input("Usuário 🔑")
     password = st.text_input("Senha 🔒", type="password")
     if st.button("Entrar"):
