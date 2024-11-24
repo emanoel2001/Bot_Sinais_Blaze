@@ -1,16 +1,11 @@
 import streamlit as st
-import pandas as pd
 from tinydb import TinyDB, Query
 import hashlib
 import random
 import string
-import plotly.express as px
-from datetime import datetime
-import os
+import pandas as pd
+import datetime
 
-# Verificar se a pasta db existe, se não, cria
-if not os.path.exists("db"):
-    os.makedirs("db")
 # Configuração do banco de dados
 DB_PATH = "db/usuarios.json"
 USER_DB_PATH_TEMPLATE = "db/{}.json"
@@ -84,29 +79,8 @@ class ClienteManager:
 # Funções de gerenciamento de página no Streamlit
 def main():
     """Função principal do app Streamlit"""
-    st.set_page_config(page_title="Gerenciamento de Clientes", layout="wide")
+    st.set_page_config(page_title="Gerenciamento de Clientes", layout="wide", initial_sidebar_state="expanded")
     
-    # Tema claro ou escuro
-    tema = st.sidebar.selectbox("Escolha o Tema", ["Claro", "Escuro"])
-    if tema == "Escuro":
-        st.markdown("""
-            <style>
-                body {
-                    background-color: #2e2e2e;
-                    color: #ffffff;
-                }
-            </style>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-            <style>
-                body {
-                    background-color: #f4f4f4;
-                    color: #000000;
-                }
-            </style>
-        """, unsafe_allow_html=True)
-
     # Definir estado de login na sessão
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
@@ -116,7 +90,7 @@ def main():
     if st.session_state.logged_in:
         gerenciamento_clientes()
     else:
-        menu = st.sidebar.radio("Menu", ["Login", "Cadastro", "Recuperação de Senha"])
+        menu = st.sidebar.selectbox("Selecione uma opção", ["Login", "Cadastro", "Recuperação de Senha"])
         if menu == "Login":
             login()
         elif menu == "Cadastro":
@@ -127,7 +101,6 @@ def main():
 def login():
     """Página de login"""
     st.title("Login")
-    st.info("Entre com suas credenciais.")
     username = st.text_input("Usuário")
     password = st.text_input("Senha", type="password")
     if st.button("Entrar"):
@@ -150,11 +123,11 @@ def cadastro():
     if st.button("Cadastrar"):
         if password == confirm_password:
             if criar_usuario(username, password, email):
-                st.success("Usuário cadastrado com sucesso!")
+                st.success("Usuário cadastrado com sucesso!", icon="✅")
             else:
-                st.error("Usuário ou e-mail já existem.")
+                st.error("Usuário ou e-mail já existem.", icon="❌")
         else:
-            st.error("As senhas não coincidem.")
+            st.warning("As senhas não coincidem.", icon="⚠️")
 
 def recuperacao_senha():
     """Página para recuperação de senha"""
@@ -199,14 +172,15 @@ def gerenciamento_clientes():
 def cadastrar_cliente(db_manager):
     """Cadastro de um novo cliente"""
     with st.form("Cadastro de Cliente"):
-        nome = st.text_input("Nome completo").strip().upper()
+        nome = st.text_input("Nome completo", value="", placeholder="Digite o nome completo").strip().upper()
         data_nascimento = st.date_input("Data de Nascimento", format="DD/MM/YYYY")
-        endereco = st.text_input("Endereço").strip().upper()
-        telefone = st.text_input("Telefone").strip()
-        cpf = st.text_input("CPF").strip()
-        email = st.text_input("E-mail")
+        endereco = st.text_input("Endereço", value="", placeholder="Digite o endereço").strip().upper()
+        telefone = st.text_input("Telefone", value="", placeholder="Digite o telefone").strip()
+        cpf = st.text_input("CPF", value="", placeholder="Digite o CPF").strip()
+        email = st.text_input("E-mail", value="", placeholder="Digite o e-mail")
 
-        if st.form_submit_button("Cadastrar"):
+        submit_button = st.form_submit_button("Cadastrar")
+        if submit_button:
             if nome and data_nascimento and endereco and telefone and cpf and email:
                 cliente = {
                     "Nome": nome,
@@ -221,7 +195,7 @@ def cadastrar_cliente(db_manager):
                 else:
                     st.error("Cliente com os mesmos dados já cadastrado.")
             else:
-                st.error("Todos os campos são obrigatórios.")
+                st.warning("Todos os campos são obrigatórios.")
 
 def verificar_cliente(db_manager):
     """Verificar se um cliente existe"""
@@ -242,14 +216,9 @@ def verificar_cliente(db_manager):
 def remover_cliente(db_manager):
     """Remover um cliente"""
     nome = st.text_input("Nome do cliente para remover").strip().upper()
-    if st.button("Buscar Cliente"):
-        cliente = db_manager.buscar_cliente(nome)
-        if cliente:
-            if st.button("Confirmar Remoção"):
-                db_manager.remover_cliente(nome)
-                st.success(f"Cliente {nome} removido com sucesso!")
-        else:
-            st.error("Cliente não encontrado.")
+    if st.button("Remover Cliente"):
+        db_manager.remover_cliente(nome)
+        st.success(f"Cliente {nome} removido com sucesso!")
 
 def atualizar_cliente(db_manager):
     """Atualizar dados de um cliente"""
@@ -257,17 +226,11 @@ def atualizar_cliente(db_manager):
     if st.button("Buscar Cliente"):
         cliente = db_manager.buscar_cliente(nome)
         if cliente:
-            with st.form(key='update_form'):
-                campo_atualizado = st.selectbox("Campo a ser atualizado", ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"])
-                novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
-                submit_button = st.form_submit_button("Atualizar Cliente")
-                
-                if submit_button:
-                    if novo_valor.strip():  # Validação para valor não vazio
-                        db_manager.atualizar_cliente(nome, campo_atualizado, novo_valor.strip())
-                        st.success(f"{campo_atualizado} do cliente atualizado com sucesso!")
-                    else:
-                        st.error("O novo valor não pode estar vazio.")
+            campo_atualizado = st.selectbox("Campo a ser atualizado", ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"])
+            novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
+            if st.button("Atualizar Cliente"):
+                db_manager.atualizar_cliente(nome, campo_atualizado, novo_valor)
+                st.success(f"{campo_atualizado} do cliente atualizado com sucesso!")
         else:
             st.error("Cliente não encontrado.")
 
@@ -275,10 +238,15 @@ def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
     clientes = db_manager.listar_clientes()
     if clientes:
-        df_clientes = pd.DataFrame(clientes)  # Converte para DataFrame (se usar pandas)
-        st.dataframe(df_clientes[['Nome', 'DataNascimento', 'Telefone', 'CPF']])  # Mostra somente as colunas principais
+        df = pd.DataFrame(clientes)
+        st.dataframe(df.style.set_table_styles([{
+            'selector': 'thead th',
+            'props': [('background-color', '#4CAF50'), ('color', 'white')]
+        }]))
     else:
-        st.warning("Nenhum cliente cadastrado.")
+        st.write("Nenhum cliente cadastrado.")
 
 if __name__ == "__main__":
     main()
+
+# executar o streamlit: streamlit run main.py --server.enableCORS false --server.enableXsrfProtection false
