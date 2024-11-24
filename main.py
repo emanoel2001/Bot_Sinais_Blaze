@@ -5,6 +5,7 @@ import random
 import string
 import pandas as pd
 import datetime
+import bcrypt
 
 # Configuração do banco de dados
 DB_PATH = "db/usuarios.json"
@@ -18,8 +19,8 @@ def gerar_senha_temporaria():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
 def hash_senha(password):
-    """Retorna o hash SHA-256 de uma senha"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode(), salt)
 
 # Funções de autenticação
 def criar_usuario(username, password, email):
@@ -33,9 +34,10 @@ def criar_usuario(username, password, email):
     return True
 
 def verificar_usuario(username, password):
-    """Verifica as credenciais do usuário"""
-    password_hash = hash_senha(password)
-    return len(db.search((user_query.username == username) & (user_query.password == password_hash))) > 0
+    user = db.search(user_query.username == username)
+    if user and bcrypt.checkpw(password.encode(), user[0]['password']):
+        return True
+    return False
 
 def recuperar_senha(email, nova_senha):
     """Recupera a senha do usuário e retorna uma nova senha escolhida"""
