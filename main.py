@@ -247,6 +247,9 @@ def listar_clientes(db_manager):
         st.write("Nenhum cliente cadastrado.")
 
 if __name__ == "__main__":
-    main()
-
+    while True:
+        try:
+            main()
+        except:
+            pass
 # executar o streamlit: streamlit run main.py --server.enableCORS false --server.enableXsrfProtection false
