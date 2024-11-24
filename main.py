@@ -304,48 +304,34 @@ def remover_cliente(db_manager):
             del st.session_state.deleted_client  # Limpa a exclusão armazenada
 
 def atualizar_cliente(db_manager):
-    """Atualizar dados de um cliente com feedback interativo"""
+    """Atualizar dados de um cliente com melhoria na experiência do usuário"""
+    st.title("Atualizar Cliente")
     nome = st.text_input("Nome do cliente para atualizar").strip().upper()
     
-    if st.button("Buscar Cliente") and nome:
-        # Buscando cliente pelo nome
-        cliente_encontrado = db_manager.buscar_cliente(nome)
-        
-        if cliente_encontrado:
-            cliente = cliente_encontrado[0]  # Considerando que o nome é único ou pegando o primeiro resultado
-            st.write(f"**Cliente encontrado: {cliente['Nome']}**")
+    if nome:
+        # Buscar o cliente na base de dados
+        cliente = db_manager.buscar_cliente(nome)
+        if cliente:
+            # Selecionar qual campo será atualizado
+            campo_atualizado = st.selectbox(
+                "Selecione o campo a ser atualizado",
+                ["Nome", "DataNascimento", "Endereco", "Telefone", "CPF", "Email"]
+            )
+            # Input para novo valor
+            novo_valor = st.text_input(f"Novo valor para {campo_atualizado}")
             
-            # Preenchendo os campos com dados atuais
-            with st.form(key="form_atualizar_cliente"):
-                novo_nome = st.text_input("Novo Nome", value=cliente['Nome'])
-                novo_endereco = st.text_input("Novo Endereço", value=cliente['Endereco'])
-                novo_telefone = st.text_input("Novo Telefone", value=cliente['Telefone'])
-                novo_email = st.text_input("Novo E-mail", value=cliente['Email'])
-                novo_cpf = st.text_input("Novo CPF", value=cliente['CPF'])
-                nova_data_nascimento = st.date_input("Nova Data de Nascimento", value=pd.to_datetime(cliente['DataNascimento']).date())
-                
-                submit_button = st.form_submit_button("Atualizar Cliente")
-                
-                if submit_button:
-                    # Validação dos campos
-                    if not novo_nome or not novo_endereco or not novo_telefone or not novo_email or not novo_cpf:
-                        st.warning("Todos os campos são obrigatórios!")
-                    else:
-                        # Preparando o dicionário com os dados atualizados
-                        cliente_atualizado = {
-                            "Nome": novo_nome,
-                            "Endereco": novo_endereco,
-                            "Telefone": novo_telefone,
-                            "Email": novo_email,
-                            "CPF": novo_cpf,
-                            "DataNascimento": str(nova_data_nascimento)
-                        }
-                        
-                        # Atualizando o cliente no banco de dados
-                        db_manager.atualizar_cliente(nome, cliente_atualizado)
-                        st.success(f"Cliente {novo_nome} atualizado com sucesso!")
+            # Validação de dados antes da atualização
+            if st.button("Atualizar Cliente"):
+                if novo_valor:
+                    # Atualiza o valor no banco de dados
+                    db_manager.atualizar_cliente(nome, campo_atualizado, novo_valor)
+                    st.success(f"{campo_atualizado} do cliente '{nome}' atualizado com sucesso!")
+                else:
+                    st.warning("Por favor, insira um novo valor válido.")
         else:
-            st.error("Cliente não encontrado com esse nome.")
+            st.error(f"Cliente '{nome}' não encontrado.")
+    else:
+        st.warning("Digite o nome do cliente para buscar.")
 
 def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
