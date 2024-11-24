@@ -304,19 +304,45 @@ def remover_cliente(db_manager):
             st.success(f"Cliente '{cliente_excluido['Nome']}' restaurado com sucesso!")
             del st.session_state.deleted_client  # Limpa a exclusão armazenada
 
-def atualizar_cliente(self, nome, campo, novo_valor):
-    """Atualiza informações de um cliente"""
-    clientes = self.db.search(self.query.Nome == nome)
-    if not clientes:
-        return False  # Cliente não encontrado
-    cliente = clientes[0]  # Assume que o nome é único
+def atualizar_cliente(db_manager):
+    """Atualiza as informações de um cliente."""
+    st.title("Atualizar Cliente")
+    
+    # Solicita o nome do cliente para buscar os dados
+    nome = st.text_input("Digite o nome do cliente para atualizar", key="nome_cliente").strip().upper()
 
-    if campo not in cliente:
-        return False  # O campo não existe no cliente
+    # Verifica se o cliente existe no banco de dados
+    if nome:
+        cliente_encontrado = db_manager.db.search(db_manager.query.Nome == nome)
+        
+        if cliente_encontrado:
+            cliente = cliente_encontrado[0]  # Pega o primeiro cliente encontrado
+            st.write("Dados atuais do cliente:", cliente)
 
-    # Atualiza o campo
-    self.db.update({campo: novo_valor}, self.query.Nome == nome)
-    return True
+            # Atualiza os campos do cliente
+            with st.form("Atualizar Cliente"):
+                novo_nome = st.text_input("Novo Nome", value=cliente['Nome'])
+                novo_endereco = st.text_input("Novo Endereço", value=cliente['Endereco'])
+                novo_telefone = st.text_input("Novo Telefone", value=cliente['Telefone'])
+                novo_cpf = st.text_input("Novo CPF", value=cliente['CPF'])
+                novo_email = st.text_input("Novo E-mail", value=cliente['Email'])
+                submit_button = st.form_submit_button("Atualizar")
+
+                if submit_button:
+                    # Valida se os campos não estão vazios
+                    if novo_nome and novo_endereco and novo_telefone and novo_cpf and novo_email:
+                        # Atualiza o cliente com os novos dados
+                        db_manager.atualizar_cliente(nome, "Nome", novo_nome)
+                        db_manager.atualizar_cliente(nome, "Endereco", novo_endereco)
+                        db_manager.atualizar_cliente(nome, "Telefone", novo_telefone)
+                        db_manager.atualizar_cliente(nome, "CPF", novo_cpf)
+                        db_manager.atualizar_cliente(nome, "Email", novo_email)
+
+                        st.success("Cliente atualizado com sucesso!")
+                    else:
+                        st.warning("Todos os campos são obrigatórios.")
+        else:
+            st.warning("Cliente não encontrado.")
 
 def listar_clientes(db_manager):
     """Listar todos os clientes cadastrados"""
