@@ -216,7 +216,7 @@ def cadastrar_cliente(db_manager):
     """Cadastro de um novo cliente"""
     with st.form("Cadastro de Cliente"):
         nome = st.text_input("Nome completo", value="", placeholder="Digite o nome completo").strip().upper()
-        data_nascimento = st.date_input("Data de Nascimento")  # Entrada do tipo date
+        data_nascimento = st.date_input("Data de Nascimento", format="DD/MM/YYYY")  # Entrada do tipo date
         endereco = st.text_input("Endereço", value="", placeholder="Digite o endereço").strip().upper()
         telefone = st.text_input("Telefone", value="", placeholder="Digite o telefone").strip()
         cpf = st.text_input("CPF", value="", placeholder="Digite o CPF").strip()
