@@ -118,9 +118,9 @@ def main():
     
     # Fluxo de navegação conforme o estado de login
     if st.session_state.logged_in:
-        # Se o usuário estiver logado, exibe o painel de controle
-        st.title(f"Bem-vindo, {st.session_state.username} 🎉")
-        st.success("Você está autenticado e pronto para gerenciar seus dados.")
+        # # Se o usuário estiver logado, exibe o painel de controle
+        # st.title(f"Bem-vindo, {st.session_state.username} 🎉")
+        # st.success("Você está autenticado e pronto para gerenciar seus dados.")
         gerenciamento_clientes()
     else:
         # Se o usuário não estiver logado, exibe as opções de login, cadastro ou recuperação de senha
@@ -143,7 +143,7 @@ def main():
 
 def login():
     """Página de login"""
-    st.title("Login 👤")
+    st.title("Login")
     username = st.text_input("Usuário 🔑")
     password = st.text_input("Senha 🔒", type="password")
     if st.button("Entrar"):
@@ -157,7 +157,7 @@ def login():
 
 def cadastro():
     """Página de cadastro de novo usuário"""
-    st.title("Cadastro ✍️")
+    st.title("Cadastro")
     username = st.text_input("Novo Usuário 👤")
     password = st.text_input("Nova Senha 🔑", type="password")
     confirm_password = st.text_input("Confirmar Senha 🔑", type="password")
@@ -166,20 +166,20 @@ def cadastro():
     if st.button("Cadastrar 🎉"):
         if password == confirm_password:
             if criar_usuario(username, password, email):
-                st.success("Usuário cadastrado com sucesso! ✅", icon="✅")
+                st.success("Usuário cadastrado com sucesso!", icon="✅")
             else:
-                st.error("Usuário ou e-mail já existem. ⚠️", icon="❌")
+                st.error("Usuário ou e-mail já existem.", icon="❌")
         else:
-            st.warning("As senhas não coincidem. ⚠️", icon="⚠️")
+            st.warning("As senhas não coincidem.", icon="⚠️")
 
 def recuperacao_senha():
     """Página para recuperação de senha"""
-    st.title("Recuperação de Senha 🔑")
+    st.title("Recuperação de Senha")
     email = st.text_input("E-mail para recuperação 📧")
     nova_senha = st.text_input("Nova Senha 🔑", type="password")
     confirm_nova_senha = st.text_input("Confirmar Nova Senha 🔑", type="password")
     
-    if st.button("Recuperar Senha 🔄"):
+    if st.button("Recuperar Senha"):
         if nova_senha == confirm_nova_senha:
             if recuperar_senha(email, nova_senha):
                 st.success("Senha redefinida com sucesso! 🔑")
@@ -216,7 +216,7 @@ def cadastrar_cliente(db_manager):
     """Cadastro de um novo cliente"""
     with st.form("Cadastro de Cliente"):
         nome = st.text_input("Nome completo", value="", placeholder="Digite o nome completo").strip().upper()
-        data_nascimento = st.date_input("Data de Nascimento", format="DD/MM/YYYY")
+        data_nascimento = st.date_input("Data de Nascimento")  # Entrada do tipo date
         endereco = st.text_input("Endereço", value="", placeholder="Digite o endereço").strip().upper()
         telefone = st.text_input("Telefone", value="", placeholder="Digite o telefone").strip()
         cpf = st.text_input("CPF", value="", placeholder="Digite o CPF").strip()
@@ -225,9 +225,11 @@ def cadastrar_cliente(db_manager):
         submit_button = st.form_submit_button("Cadastrar")
         if submit_button:
             if nome and data_nascimento and endereco and telefone and cpf and email:
+                # Formata a data para o formato dia/mês/ano
+                data_nascimento = data_nascimento.strftime("%d/%m/%Y")
                 cliente = {
                     "Nome": nome,
-                    "DataNascimento": str(data_nascimento),
+                    "DataNascimento": data_nascimento,
                     "Endereco": endereco,
                     "Telefone": telefone,
                     "CPF": cpf,
