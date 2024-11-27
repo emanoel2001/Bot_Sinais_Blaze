@@ -8,6 +8,7 @@ import datetime
 import bcrypt
 import json
 import os
+import time
 # Criar pasta caso não tenha
 if not os.path.exists("db"):
     os.makedirs("db")
@@ -397,5 +398,11 @@ def listar_clientes(db_manager):
         st.write("Nenhum cliente cadastrado.")
 
 if __name__ == "__main__":
+    # Criar um contêiner que será atualizado periodicamente
+    placeholder = st.empty()
+    while True:
+        with placeholder.container():
+            st.write("Atualizando a página para evitar inatividade.")
+        time.sleep(60)  # Espera 60 segundos antes de atualizar novamente
     main()
 # executar o streamlit: streamlit run main.py --server.enableCORS false --server.enableXsrfProtection false
